@@ -13,8 +13,9 @@ struct Body {
     _type: String,
     #[serde(rename == "msg_id")]
     id: Option<usize>,
-    #[serde(rename == "in_reply_to")]
-    reply: Option<RequestId>
+    in_reply_to: Option<RequestId>,
+
+    rest: HashMap<String, serde_json::Value>
 }
 
 type RequestId = usize
