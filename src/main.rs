@@ -89,9 +89,9 @@ fn main() -> anyhow::Result<()> {
 
     let nhi = Person { age: 1, name: Name::DennisWei { name: "asdasd".to_string() }};
 
-    let output = serde_json::to_string(&nhi);
+    let nhi_output = serde_json::to_string(&nhi);
 
-    println!("{:?}", output);
+    println!("{:?}", nhi_output);
 
     let stdin = std::io::stdin().lock();
     let inputs = serde_json::Deserializer::from_reader(stdin).into_iter::<Message>();
