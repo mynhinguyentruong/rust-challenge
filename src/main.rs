@@ -17,18 +17,20 @@ struct Body {
     _type: String,
     #[serde(rename = "msg_id")]
     id: Option<usize>,
-    in_reply_to: Option<RequestId>,
+    in_reply_to: Option<usize>,
     #[serde(flatten)]
     payload: Payload
 }
 
-type RequestId = usize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")] // turn all Echo to snake_case
+#[serde(tag = "type")] // type Echo will return echo: echo, type EchoOK will return echo: echo_ok
+#[serde(rename_all = "snake_case")] // turn all enum to snake_case 
 enum Payload {
-    Echo { echo: String, },
-    EchoOk { echo: String }
+    Echo { echo: String, }, // will tag "type": "echo"
+    EchoOk { echo: String }, // will tag "type": "echo_ok"
+    Init { node_id: String, },
+    InitOk { node_id: String },
 }
 
 struct EchoNode {
@@ -36,7 +38,7 @@ struct EchoNode {
 }
 
 impl EchoNode {
-    fn step(&mut self, input: Message, output: &mut serde_json::Serializer<StdoutLock>) -> anyhow::Result<()> {
+    pub fn step(&mut self, input: Message, output: &mut serde_json::Serializer<StdoutLock>) -> anyhow::Result<()> {
         match input.body.payload {
             Payload::Echo { echo } => {
                 let reply = Message {
@@ -53,6 +55,10 @@ impl EchoNode {
             }
 
             Payload::EchoOk { echo } => {}
+
+            Payload::Init { node_id } => {}
+
+            Payload::InitOk { node_id } => {}
         };
 
         
@@ -61,9 +67,32 @@ impl EchoNode {
     }
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+struct Person {
+    #[serde(flatten)]
+    name: Name,
+    #[serde(rename = "number")]
+    age: usize
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+#[serde(tag = "type")]
+#[serde(rename_all = "snake_case")]
+enum Name {
+    MyNhi {name: String},
+    DennisWei { name: String }
+}
+
 
 
 fn main() -> anyhow::Result<()> {
+
+    let nhi = Person { age: 1, name: Name::DennisWei { name: "asdasd".to_string() }};
+
+    let output = serde_json::to_string(&nhi);
+
+    println!("{:?}", output);
+
     let stdin = std::io::stdin().lock();
     let inputs = serde_json::Deserializer::from_reader(stdin).into_iter::<Message>();
 
